@@ -2,9 +2,16 @@
 # 1. プラグイン（Provider）の設定
 # ==========================================
 terraform {
+  cloud {
+    organization = "snowflake-training"
+    workspaces {
+      name = "snowflake-workspace"
+    }
+  }
+
   required_providers {
     snowflake = {
-      source  = "snowflakedb/snowflake"   # ← ここも変更
+      source  = "snowflakedb/snowflake" # ← ここも変更
       version = ">= 1.0.0"
     }
   }
@@ -20,7 +27,7 @@ provider "snowflake" {
   role              = var.snowflake_role
   warehouse         = var.snowflake_warehouse
   authenticator     = "SNOWFLAKE_JWT"
-  private_key       = file(var.snowflake_private_key_path)
+  private_key       = var.snowflake_private_key
 }
 
 # ==========================================
