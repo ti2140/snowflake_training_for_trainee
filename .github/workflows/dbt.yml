@@ -9,32 +9,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. GitHubリポジトリのコードをチェックアウト
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Python環境のセットアップ
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # 3. HCP Terraformから変数を安全に一括同期する
-      - name: Sync HCP Terraform Variables
-        uses: hashicorp/tfe-sync/actions/sync@v1
-        with:
-          token: ${{ secrets.TFC_TOKEN }}
-          workspace: "ws-J2rtbnPn3rAFi8yV"
+      # HCP Terraform APIから変数を取得して環境変数に展開
+      - name: Fetch variables from HCP Terraform
+        run: |
+          # ワークスペースの変数一覧をAPI取得
+          RESPONSE=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.HCP_API_TOKEN }}" \
+            --header "Content-Type: application/vnd.api+json" \
+            "https://app.terraform.io/api/v2/workspaces/ws-J2rtbnPn3rAFi8yV/vars")
 
-      # 4. dbt-snowflakeのインストールと環境変数の設定
+          # 各変数をGITHUB_ENVに書き出す
+          # ※ Sensitiveな変数はAPIレスポンスでvalue=""になるため別途対応（後述）
+          echo "$RESPONSE" | \
+            python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          for var in data['data']:
+            key = var['attributes']['key']
+            value = var['attributes']['value'] or ''
+            sensitive = var['attributes']['sensitive']
+            if not sensitive:
+              print(f'{key}={value}')
+          " >> $GITHUB_ENV
+
       - name: Install dbt and Run
-        # 実際のdbtプロジェクトがあるディレクトリを指定
         working-directory: ./dbt/mydbt
         env:
-          # HCP Terraformで「Sensitive（秘匿）」として登録されている変数は、
-          # 同期実行によって GitHubの "Secrets" 側に自動作成されます。
-          # そのため「secrets.変数名」の構文で呼び出す必要があります。
-          DBT_ENV_SECRET_PRIVATE_KEY: ${{ secrets.dbt_snowflake_private_key }}
+          # Sensitiveな変数はGitHub Secretsから直接参照（※後述）
+          DBT_ENV_SECRET_PRIVATE_KEY: ${{ secrets.DBT_SNOWFLAKE_PRIVATE_KEY }}
         run: |
           pip install --no-cache-dir dbt-snowflake
           dbt debug --profiles-dir .
