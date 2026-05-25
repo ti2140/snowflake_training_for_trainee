@@ -3,6 +3,7 @@ name: dbt Snowflake Run
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   dbt-run:
