@@ -43,14 +43,8 @@ jobs:
       - name: Install dbt and Run
         working-directory: ./dbt/mydbt
         env:
-          DBT_ENV_SECRET_ACCOUNT:     ${{ secrets.DBT_ENV_SECRET_ACCOUNT }}
-          DBT_ENV_SECRET_USER:        ${{ secrets.DBT_ENV_SECRET_USER }}
-          DBT_ENV_SECRET_ROLE:        ${{ secrets.DBT_ENV_SECRET_ROLE }}
-          DBT_ENV_SECRET_WAREHOUSE:   ${{ secrets.DBT_ENV_SECRET_WAREHOUSE }}
-          DBT_ENV_SECRET_DATABASE:    ${{ secrets.DBT_ENV_SECRET_DATABASE }}
-          DBT_ENV_SECRET_SCHEMA:      ${{ secrets.DBT_ENV_SECRET_SCHEMA }}
-          DBT_ENV_SECRET_PRIVATE_KEY: ${{ secrets.DBT_SNOWFLAKE_PRIVATE_KEY }}
-        run: |
+          DBT_ENV_SECRET_PRIVATE_KEY: ${{ secrets.DBT_ENV_SECRET_PRIVATE_KEY }}
+        run: 
           pip install --no-cache-dir dbt-snowflake
           dbt debug --profiles-dir .
           dbt run --profiles-dir .
