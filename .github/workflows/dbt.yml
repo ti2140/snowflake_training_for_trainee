@@ -17,44 +17,28 @@ jobs:
         with:
           python-version: '3.11'
 
-      # HCP Terraform APIから変数を取得して環境変数に展開
       - name: Fetch variables from HCP Terraform
         run: |
-          # ワークスペースの変数一覧をAPI取得
           RESPONSE=$(curl -s \
             --header "Authorization: Bearer ${{ secrets.HCP_API_TOKEN }}" \
             --header "Content-Type: application/vnd.api+json" \
-            "https://app.terraform.io/api/v2/workspaces/ws-J2rtbnPn3rAFi8yV/vars")
+            "https://app.terraform.io/api/v2/workspaces/ws-wSwSw3TQ4Ni93Rjv/vars")
 
-          # 各変数をGITHUB_ENVに書き出す
-          # ※ Sensitiveな変数はAPIレスポンスでvalue=""になるため別途対応（後述）
           echo "$RESPONSE" | python3 << 'EOF' >> $GITHUB_ENV
-          import sys, json
-          data = json.load(sys.stdin)
-          for var in data['data']:
-            key = var['attributes']['key']
-            value = var['attributes']['value'] or ''
-            sensitive = var['attributes']['sensitive']
-            if not sensitive:
-              print(f'{key}={value}')
-          " >> $GITHUB_ENV
+import sys, json
+data = json.load(sys.stdin)
+for var in data['data']:
+    key = var['attributes']['key']
+    value = var['attributes']['value'] or ''
+    sensitive = var['attributes']['sensitive']
+    if not sensitive:
+        print(f'{key}={value}')
+EOF
 
       - name: Debug variables
         run: |
           echo "=== GITHUB_ENV contents ==="
           cat $GITHUB_ENV
-
-          echo "=== API Response ==="
-          curl -s \
-            --header "Authorization: Bearer ${{ secrets.HCP_API_TOKEN }}" \
-            --header "Content-Type: application/vnd.api+json" \
-            "https://app.terraform.io/api/v2/workspaces/ws-wSwSw3TQ4Ni93Rjv/vars" | \
-            python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          for var in data['data']:
-            print('key:', var['attributes']['key'], '/ sensitive:', var['attributes']['sensitive'], '/ value:', var['attributes']['value'])
-          "
 
       - name: Install dbt and Run
         working-directory: ./dbt/mydbt
