@@ -10,5 +10,4 @@ mydbt:
       database: "{{ env_var('DBT_ENV_SECRET_DATABASE') }}"
       schema: "{{ env_var('DBT_ENV_SECRET_SCHEMA') }}"
       threads: 4
-      authenticator: keypair
-      private_key_pem: "{{ env_var('DBT_ENV_SECRET_PRIVATE_KEY') }}"
+      private_key: "{{ env_var('DBT_ENV_SECRET_PRIVATE_KEY') }}"
