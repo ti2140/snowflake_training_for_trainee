@@ -60,7 +60,7 @@ jobs:
           curl -s \
             --header "Authorization: Bearer ${{ secrets.HCP_API_TOKEN }}" \
             --header "Content-Type: application/vnd.api+json" \
-            "https://app.terraform.io/api/v2/workspaces/ws-J2rtbnPn3rAFi8yV/vars" \
+            "https://app.terraform.io/api/v2/workspaces/ws-wSwSw3TQ4Ni93Rjv/vars" \
             | python3 src/fetch_tfc_vars.py >> $GITHUB_ENV
 
       - name: Install dbt and Run
@@ -68,7 +68,12 @@ jobs:
         env:
           DBT_ENV_SECRET_PRIVATE_KEY: ${{ secrets.DBT_ENV_SECRET_PRIVATE_KEY }}
         run: |
+          # Bashで記述
           pip install --no-cache-dir dbt-snowflake
           dbt debug --profiles-dir .
-          dbt seed --profiles-dir .
-          dbt run --profiles-dir .
+          # トリガーがPRの時はcompile、mainマージ時はrunを実行
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            dbt compile --profiles-dir .
+          else
+            dbt run --profiles-dir .
+          fi
