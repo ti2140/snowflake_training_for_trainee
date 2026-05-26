@@ -7,7 +7,7 @@ mydbt:
       user: "{{ env_var('DBT_ENV_SECRET_USER') }}"
       role: "{{ env_var('DBT_ENV_SECRET_ROLE') }}"
       warehouse: "{{ env_var('DBT_ENV_SECRET_WAREHOUSE') }}"
-      database: "{{ env_var('DBT_ENV_SECRET_DATABASE') }}"
+      database: "{{ env_var('DBT_DATABASE') }}"
       schema: "{{ env_var('DBT_ENV_SECRET_SCHEMA') }}"
       threads: 4
       private_key: "{{ env_var('DBT_ENV_SECRET_PRIVATE_KEY') }}"

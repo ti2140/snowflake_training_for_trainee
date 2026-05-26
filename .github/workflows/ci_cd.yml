@@ -38,7 +38,7 @@ jobs:
 
       - name: Terraform Apply
         working-directory: terraform
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         run: terraform apply -auto-approve
 
   dbt:
@@ -62,6 +62,12 @@ jobs:
             --header "Content-Type: application/vnd.api+json" \
             "https://app.terraform.io/api/v2/workspaces/ws-wSwSw3TQ4Ni93Rjv/vars" \
             | python3 src/fetch_tfc_vars.py >> $GITHUB_ENV
+
+      - name: Terraform Output
+        working-directory: terraform
+        run: |
+          DB_NAME=$(terraform output -raw training_db_name)
+          echo "DBT_DATABASE=$DB_NAME" >> $GITHUB_ENV
 
       - name: Install dbt and Run
         working-directory: ./dbt/mydbt
