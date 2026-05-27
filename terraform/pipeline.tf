@@ -179,3 +179,26 @@ resource "snowflake_grant_privileges_to_account_role" "future_table_select" {
     }
   }
 }
+
+# ST_S3_MAILステージへのUSAGE権限
+resource "snowflake_grant_privileges_to_account_role" "stage_usage" {
+  account_role_name = "FR_ANCHOR_DEMO_ROLE"
+  privileges        = ["USAGE", "READ"]
+  on_schema_object {
+    object_type = "STAGE"
+    object_name = "${snowflake_database.training_db.name}.${snowflake_schema.training_raw.name}.ST_S3_MAIL"
+  }
+  depends_on = [snowflake_stage.st_s3_mail]
+}
+
+# 将来作成されるステージへも自動付与
+resource "snowflake_grant_privileges_to_account_role" "future_stage_usage" {
+  account_role_name = "FR_ANCHOR_DEMO_ROLE"
+  privileges        = ["USAGE", "READ"]
+  on_schema_object {
+    future {
+      object_type_plural = "STAGES"
+      in_schema          = "${snowflake_database.training_db.name}.${snowflake_schema.training_raw.name}"
+    }
+  }
+}
