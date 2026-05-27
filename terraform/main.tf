@@ -11,7 +11,7 @@ terraform {
 
   required_providers {
     snowflake = {
-      source  = "snowflakedb/snowflake" # ← ここも変更
+      source  = "snowflakedb/snowflake"
       version = ">= 1.0.0"
     }
   }
@@ -52,34 +52,3 @@ resource "snowflake_grant_privileges_to_account_role" "training_db_usage" {
   }
 }
 
-# ==========================================
-# 5. stateファイルからリソースを削除
-# ==========================================
-
-removed {
-  from = snowflake_grant_privileges_to_account_role.db_usage
-  lifecycle {
-    destroy = false
-  }
-}
-
-removed {
-  from = snowflake_grant_privileges_to_account_role.db_create_schema
-  lifecycle {
-    destroy = false
-  }
-}
-
-removed {
-  from = snowflake_grant_privileges_to_account_role.schema_usage
-  lifecycle {
-    destroy = false
-  }
-}
-
-removed {
-  from = snowflake_grant_privileges_to_account_role.future_schema_usage
-  lifecycle {
-    destroy = false
-  }
-}
