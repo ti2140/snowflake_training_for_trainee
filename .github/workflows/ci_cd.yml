@@ -1,6 +1,5 @@
 name: CI/CD Pipeline
 
-# ワークフローの起動条件を定義
 on:
   push:
     branches:
@@ -13,7 +12,6 @@ jobs:
     name: Terraform
     runs-on: ubuntu-latest
     environment: ${{ github.actor }}
-    if: github.ref != 'refs/heads/main' || github.event_name == 'push'
     env:
       TF_TOKEN_app_terraform_io: ${{ secrets.HCP_API_TOKEN }}
       TF_WORKSPACE: ${{ vars.TF_WORKSPACE }}
@@ -39,15 +37,17 @@ jobs:
 
       - name: Terraform Apply
         working-directory: terraform
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        if: github.event_name == 'workflow_dispatch'
         run: terraform apply -auto-approve
 
   dbt:
     name: dbt
     runs-on: ubuntu-latest
     environment: ${{ github.actor }}
-    if: github.ref != 'refs/heads/main' || github.event_name == 'push'
     needs: terraform
+    if: |
+      success() ||
+      (failure() && github.event_name == 'push')
 
     steps:
       - name: Checkout code
@@ -85,12 +85,12 @@ jobs:
         working-directory: ./dbt/mydbt
         env:
           DBT_ENV_SECRET_PRIVATE_KEY: ${{ secrets.DBT_ENV_SECRET_PRIVATE_KEY }}
-        run: | # Bashで記述
+        run: |
           pip install --no-cache-dir dbt-snowflake
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            dbt compile --profiles-dir .
-          else
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             dbt debug --profiles-dir . || true
             dbt run-operation load_mails_raw --profiles-dir .
             dbt run --profiles-dir .
+          else
+            dbt compile --profiles-dir .
           fi
