@@ -39,10 +39,6 @@ resource "snowflake_grant_privileges_to_account_role" "training_schema_grants" {
   on_schema {
     schema_name = each.value
   }
-  depends_on = [
-    snowflake_schema.training_raw,
-    snowflake_schema.training_normalized
-  ]
 }
 
 resource "snowflake_grant_privileges_to_account_role" "future_schema_training" {
@@ -71,6 +67,6 @@ resource "snowflake_grant_privileges_to_account_role" "training_wh_usage" {
   privileges        = ["USAGE"]
   on_account_object {
     object_type = "WAREHOUSE"
-    object_name = "SNOWFLAKE_LEARNING_WH"
+    object_name = var.snowflake_warehouse
   }
 }
