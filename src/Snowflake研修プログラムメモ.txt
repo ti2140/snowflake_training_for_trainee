@@ -1,0 +1,140 @@
+# タスク実行権限
+resource "snowflake_grant_privileges_to_account_role" "execute_task" {
+  account_role_name = "FR_ANCHOR_DEMO_ROLE"
+  privileges        = ["EXECUTE TASK"]
+  on_account        = true
+}
+
+Terraform CLI互換性問題
+
+
+・案件IDで検索できない
+当システムで表示している JOB-XXXXXXXX / CAND-XXXXXXXX 形式のIDは、受信メールから案件・人材情報を抽出・構造化した際に、内部で自動採番された表示用IDです。
+
+IDの生成元と仕組み
+項目	説明
+元データ	受信メール（案件紹介・人材紹介メール）
+生成タイミング	メールをパース・構造化し、案件/人材レコードとして登録する際
+形式	内部ID（job_id / candidate_id）のハッシュ短縮形
+用途	一覧表示・特定・参照用のユーザー向け短縮ID
+つまり：
+これらのIDは Outlookのメール管理画面には表示されません
+当検索システム独自のIDであり、メールを構造化した後に付与されるものです
+そのため、Outlookで直接メールを見ている方とIDを共有するには、件名や案件名、紹介会社名などの共通情報を使っていただくのが確実です
+
+
+pipeline.tfの権限付与を修正
+
+CloudFormationスタック自体へのOwnerタグはスタック作成時にコンソール上で手動付与が必要です。テンプレート内では指定できないため、研修生向けの手順書に記載する必要があります。
+
+
+
+# ==========================================
+# 5. stateファイルからリソースを削除
+# ==========================================
+
+removed {
+  from = snowflake_grant_privileges_to_account_role.db_usage
+  lifecycle {
+    destroy = false
+  }
+}
+
+removed {
+  from = snowflake_grant_privileges_to_account_role.db_create_schema
+  lifecycle {
+    destroy = false
+  }
+}
+
+removed {
+  from = snowflake_grant_privileges_to_account_role.schema_usage
+  lifecycle {
+    destroy = false
+  }
+}
+
+removed {
+  from = snowflake_grant_privileges_to_account_role.future_schema_usage
+  lifecycle {
+    destroy = false
+  }
+}
+
+
+コンテキスト：研修生ごとに専用データベースを用意し、本番環境と分離（CREATE DATABASEまでは管理者が実施） 
+
+WAREHOUSE：研修生に作成させる 
+
+ROLE：RECRUIT_MAIL_DB_DEMO（全研修生共通） 
+
+DATABASE：研修生ごとの専用データベース 
+
+SCHEMA:- 
+
+スキーマ以下の構築は、仕様書に基づき研修生が一人称で実施 
+
+Snowsight上（Workspace、Notebook）ではなく、TerraformやdbtによるCUI操作を想定 
+
+
+
+AWS環境構築（2h） 
+
+アカウント単位で本番環境と分離することを想定 
+
+事前準備されたYAMLスタックによる構築。細部の設定を研修生自身が編集 
+
+ 
+
+Snowflake-AWS間の連携（2h） 
+
+Storage Integrationの作成とIAMロールの紐づけ 
+
+研修生が一人称で実施 
+
+ 
+
+CI/CDデプロイパイプラインの構築（2h） 
+
+本番環境と同様にGitLabを使用すべきか、Github等他ツールを採用すべきか 
+
+研修生自身でパイプラインを構築 
+
+ソースコードも同プラットフォーム上で管理。質疑応答時のコード共有ツールとしても活用 
+
+ 
+
+Lambda関数の実装（2h） 
+
+.emlファイルをjsonl化するLambda関数をpythonで実装 
+
+関数ソースコードはスタックYAML内で参照しているが、一部不完全な形にしておき、研修生による手動修正を求める 
+
+ 
+
+Snowflake内データパイプラインの実装（3.5h） 
+
+Task、Stream、Snowpipeを用いた正規化の実装 
+
+予め用意された仕様書に基づき、研修生がオブジェクト作成クエリを実行 
+
+dbtの活用を検討中 
+
+ 
+
+Streamlitアプリケーションの実装（1.5h） 
+
+テンプレートとなるpythonファイルを提供し、参照元テーブル（JOBS、CANDIDATES）に合わせてビュー構造を定義してもらう 
+
+ 
+
+レポート作成（2h） 
+
+「何をどのように実装したか？」「工夫したところ、躓いたところはどこか？」等を、指定のフォーマットで記述 
+
+GitLab（GitHub）にドキュメントとして書き残すことで、研修成果をポートフォリオ化 
+
+
+
+AIの問題
+Cortex ：2～4問

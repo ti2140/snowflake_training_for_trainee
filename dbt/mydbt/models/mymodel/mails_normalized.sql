@@ -37,8 +37,8 @@ ai_processed AS (
         p.FROM_EMAIL,
         p.RECEIVED_AT,
         TRUE AS AI_PROCESSED,
-        -- SNOWFLAKE.CORTEX.SUMMARIZE(p.body_stripped) AS AI_SUMMARY,
-        FALSE AS AI_SUMMARY,
+        SNOWFLAKE.CORTEX.SUMMARIZE(p.body_stripped) AS AI_SUMMARY,
+        -- FALSE AS AI_SUMMARY,
         SNOWFLAKE.CORTEX.CLASSIFY_TEXT(p.body_stripped, l.label_array):label::VARCHAR AS AI_CATEGORY,
         SNOWFLAKE.CORTEX.SENTIMENT(p.body_stripped) AS sentiment_score,
         SNOWFLAKE.CORTEX.COMPLETE(
