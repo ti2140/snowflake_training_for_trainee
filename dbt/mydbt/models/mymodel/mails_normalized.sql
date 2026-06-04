@@ -34,7 +34,7 @@ ai_processed AS (
             SNOWFLAKE.CORTEX.CLASSIFY_TEXT(t.body_trimmed, l.label_array):label::VARCHAR,
             ':',
             1
-        )) AS category_raw,        ← 中間列として保持
+        )) AS category_raw,
         SNOWFLAKE.CORTEX.SENTIMENT(t.body_trimmed) AS sentiment_score,
         SNOWFLAKE.CORTEX.COMPLETE(
             'mistral-large',
