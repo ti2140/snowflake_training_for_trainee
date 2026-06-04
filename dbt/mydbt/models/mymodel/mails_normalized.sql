@@ -14,10 +14,8 @@ trimmed AS (
         SUBJECT,
         FROM_EMAIL,
         RECEIVED_AT,
-        LEFT(
-            REGEXP_REPLACE(BODY_TEXT, '<[^>]+>', ''),  -- HTMLタグを除去
-            4000
-        ) AS body_trimmed
+        REGEXP_REPLACE(BODY_TEXT, '<[^>]+>', '') AS body_stripped,
+        LEN(REGEXP_REPLACE(BODY_TEXT, '<[^>]+>', '')) AS stripped_length
     FROM {{ source('raw', 'MAILS_RAW') }}
 ),
 
@@ -27,16 +25,32 @@ ai_processed AS (
         t.SUBJECT,
         t.FROM_EMAIL,
         t.RECEIVED_AT,
-        SNOWFLAKE.CORTEX.SUMMARIZE(t.body_trimmed) AS summary,
-        SNOWFLAKE.CORTEX.CLASSIFY_TEXT(t.body_trimmed, l.label_array) AS classify_result,
-        SNOWFLAKE.CORTEX.SENTIMENT(t.body_trimmed) AS sentiment_score,
-        SNOWFLAKE.CORTEX.COMPLETE(
-            'mistral-large',
-            CONCAT(
-                'Extract 3-5 important keywords from the following email body. Return only a JSON array of strings. Body: ',
-                t.body_trimmed
+        CASE
+            WHEN t.stripped_length <= 3000
+            THEN SNOWFLAKE.CORTEX.SUMMARIZE(t.body_stripped)
+            ELSE '本文が長すぎるため要約をスキップしました'
+        END AS summary,
+        CASE
+            WHEN t.stripped_length <= 3000
+            THEN SNOWFLAKE.CORTEX.CLASSIFY_TEXT(t.body_stripped, l.label_array)
+            ELSE NULL
+        END AS classify_result,
+        CASE
+            WHEN t.stripped_length <= 3000
+            THEN SNOWFLAKE.CORTEX.SENTIMENT(t.body_stripped)
+            ELSE NULL
+        END AS sentiment_score,
+        CASE
+            WHEN t.stripped_length <= 3000
+            THEN SNOWFLAKE.CORTEX.COMPLETE(
+                'mistral-large',
+                CONCAT(
+                    'Extract 3-5 important keywords from the following email body. Return only a JSON array of strings. Body: ',
+                    t.body_stripped
+                )
             )
-        ) AS keywords
+            ELSE NULL
+        END AS keywords
     FROM trimmed AS t
     CROSS JOIN labels AS l
 )
