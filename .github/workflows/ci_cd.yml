@@ -11,7 +11,7 @@ jobs:
   terraform:
     name: Terraform
     runs-on: ubuntu-latest
-    environment: # TODO: GitHubの環境名を動的に参照してください
+    environment: ti2140
     env:
       TF_TOKEN_app_terraform_io: ${{ secrets.HCP_API_TOKEN }}
       TF_WORKSPACE: ${{ vars.TF_WORKSPACE }}

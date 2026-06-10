@@ -272,7 +272,7 @@ dbt --version
 
 ### ＜手順概要＞
 
-- [こちら](https://delifecoltd.sharepoint.com/sites/De-Life/_layouts/15/download.aspx?UniqueId=3b60166e02ad42b1b64a765f4c64ad03&e=0Qlf8Q)から、構成図ガイドライン（.json）をダウンロードします。
+- [こちら](.\drawIO_guideline_v2.1.json)から、構成図ガイドライン（.json）をダウンロードします。
 
 - ChatGPTやClaudeなどのLLMに構成図ガイドラインを読み込ませ、そのガイドラインに沿って構成図用XMLを出力するように依頼します。どのような構成図を出力させるかの指示は、自身で考えてください。
 
