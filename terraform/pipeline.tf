@@ -34,7 +34,7 @@ resource "snowflake_stage" "st_s3_mail" {
   database            = snowflake_database.training_db.name
   schema              = snowflake_schema.training_raw.name
   name                = "ST_S3_MAIL"
-  url                 = "s3://trainee02-bucket/messages/"
+  url                 = var.s3_bucket_url #"s3://trainee02-bucket/messages/"
   storage_integration = snowflake_storage_integration.s3_int.name
   file_format         = "FORMAT_NAME = ${snowflake_database.training_db.name}.${snowflake_schema.training_raw.name}.${snowflake_file_format.mail_jsonl_format.name}"
   comment             = "External stage for mail data from S3."
