@@ -1,15 +1,18 @@
 # ==========================================
 # Storage Integration定義
 # ==========================================
-resource "snowflake_storage_integration" "s3_int" {
-  name                 = "S3_INT"
+resource "snowflake_storage_integration" "trainee_s3_int" {
+  name                 = "TRAINEE_S3_INT"
   type                 = "EXTERNAL_STAGE"
   enabled              = true
   storage_provider     = "S3"
   storage_aws_role_arn = var.snowflake_aws_role_arn
   storage_allowed_locations = [
-    "s3://anchor-demo-mybucket/messages/",
-    "s3://trainee02-bucket/messages/"
+    's3://trainee01-bucket/messages/',
+    's3://trainee02-bucket/messages/',
+    's3://trainee03-bucket/messages/',
+    's3://trainee04-bucket/messages/',
+    's3://trainee05-bucket/messages/'
   ]
   comment = "Storage integration for S3 mail data."
 }
@@ -35,7 +38,7 @@ resource "snowflake_stage" "st_s3_mail" {
   schema              = snowflake_schema.training_raw.name
   name                = "ST_S3_MAIL"
   url                 = var.s3_bucket_url #"s3://trainee02-bucket/messages/"
-  storage_integration = snowflake_storage_integration.s3_int.name
+  storage_integration = "S3_INT"
   file_format         = "FORMAT_NAME = ${snowflake_database.training_db.name}.${snowflake_schema.training_raw.name}.${snowflake_file_format.mail_jsonl_format.name}"
   comment             = "External stage for mail data from S3."
 }
@@ -152,7 +155,7 @@ resource "snowflake_grant_privileges_to_account_role" "s3_int_usage" {
   privileges        = ["USAGE"]
   on_account_object {
     object_type = "INTEGRATION"
-    object_name = snowflake_storage_integration.s3_int.name
+    object_name = "S3_INT"
   }
 }
 
