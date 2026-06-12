@@ -1,21 +1,7 @@
 # ==========================================
 # Storage Integration定義
 # ==========================================
-resource "snowflake_storage_integration" "trainee_s3_int" {
-  name                 = "TRAINEE_S3_INT"
-  type                 = "EXTERNAL_STAGE"
-  enabled              = true
-  storage_provider     = "S3"
-  storage_aws_role_arn = var.snowflake_aws_role_arn
-  storage_allowed_locations = [
-    's3://trainee01-bucket/messages/',
-    's3://trainee02-bucket/messages/',
-    's3://trainee03-bucket/messages/',
-    's3://trainee04-bucket/messages/',
-    's3://trainee05-bucket/messages/'
-  ]
-  comment = "Storage integration for S3 mail data."
-}
+
 
 # ==========================================
 # File Format定義
